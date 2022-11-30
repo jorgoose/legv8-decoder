@@ -10,3 +10,25 @@ label:
 ADD X1, X1, X1
 BR LR                   // Branch back to link register
 done:
+
+-----------------------
+Converted to Binary -->
+-----------------------
+
+opcode          offset (2)
+100101 - 00000000000000000000000010             // BL label (Branch offset of 3)
+
+opcode         Rm     shamt     Rn      Rd
+10001011000 - 00000 - 000000 - 00000 - 00000    // ADD X0, X0, X0
+
+opcode         address (2)
+000101 - 00000000000000000000000001             // B done, offset of +2
+
+opcode         Rm     shamt     Rn      Rd
+10001011000 - 00001 - 000000 - 00001 - 00001    // ADD X1, X1, X1
+
+opcode         Rm     shamt     Rn      Rd
+11010110000 - 00000 - 000000 - 11110 - 00000    // BR LR (Linked register is line address 0)
+
+
+
