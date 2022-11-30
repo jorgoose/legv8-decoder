@@ -1,0 +1,15 @@
+print(f'{12:05b}')
+
+B label -> Encoded as -> Opcode for branch (6 bits), distance to label (26 bits)
+
+Ex: 
+INST
+INST
+INST
+B foo
+INST
+INST
+foo:
+INST
+
+Label Every Instruction (associated with their location in the file)
