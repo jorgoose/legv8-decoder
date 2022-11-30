@@ -1,4 +1,4 @@
-import main
+import reverse_compiler
 
 
 
@@ -15,7 +15,7 @@ print("------------------")
 print("")
 print("Converted to LegV8 Code: ")
 
-instrs = main.reverseCompiler('binary_branch.txt')
+instrs = reverse_compiler.reverseCompiler('binary_branch.txt')
 
 labels = {0: 'main'}
 
