@@ -239,8 +239,6 @@ def instructionTypeR(binary):
     Rn = binary[22:27]
     Rd = binary[27:32]
 
-    # registerRType(instruction, Rm, shamt, Rn, Rd)
-
     # Special case for BR
     if (instruction == "BR"):
         res = "BR X" + str(int(Rd, 2))
@@ -261,6 +259,8 @@ def instructionTypeI(binary):
     Rn = binary[22:27]
     Rd = binary[27:32]
 
+    # Return the instruction in the format of the instruction name, followed by the destination register, 
+    # followed by the source register, followed by the immediate value
     return instruction + " X" + str(int(Rd, 2)) + ", X" + str(int(Rn, 2)) + ", #" + str(int(imm12, 2))
 
 # TODO Test for correctness and completeness
@@ -274,6 +274,8 @@ def instructionTypeD(binary):
     Rn = binary[21:27]
     Rt = binary[27:32]
 
+    # Return the instruction in the format of the instruction name, followed by the target register,
+    # followed by the source register, followed by the offset
     return instruction + " X" + str(int(Rt, 2)) + ", [X" + str(int(Rn, 2)) + ", #" + str(int(dt, 2)) + "]"
 
 # Decodes binary of type B
@@ -291,9 +293,10 @@ def instructionTypeB(binary):
         procedures[int(addr, 2)] = []
         labels[int(addr, 2)] = "L" + str(len(labels))
 
+    # Return the instruction and the address of instruction to branch to
     res = instruction + " #" + str(int(addr, 2))
     procedure_address = int(addr, 2)
-    
+
     return res, procedure_address
 
 # TODO
