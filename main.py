@@ -43,6 +43,10 @@ registers = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0, 
 global currentProcedureAddr
 currentProcedureAddr = 0
 
+#----------------------------------
+# INSTRUCTION TO OPCODE DICTIONARY
+#----------------------------------
+
 format = {
     "ADD": "R",
     "ADDI": "I",
@@ -71,6 +75,10 @@ format = {
     "DUMP": "R",
     "HALT": "R"
 }
+
+#------------------
+# REVERSE COMPILER
+#------------------
 
 def reverseCompiler(filename):
 
@@ -140,6 +148,10 @@ def reverseCompiler(filename):
 
     return procedures
 
+# -----------------------
+# READ FILE LINE BY LINE
+# -----------------------
+
 # Read in .txt file of binary code and split it into a list of instructions, 
 # with each line being an instruction
 def readFile(filename):
@@ -147,6 +159,10 @@ def readFile(filename):
     instructions = file.read().splitlines()
     file.close()
     return instructions
+
+# ------------------------------------
+# EXTRACT INSTRUCTION BASED ON OPCODE
+# ------------------------------------
 
 # Gets the operation of a given instruction
 def opcodeToInstruction(binary):
@@ -205,6 +221,11 @@ def opcodeToInstruction(binary):
         return "HALT"
     else:
         return "Unknown Opcode: " + binary
+
+
+# --------------------------
+# INSTRUCTION TYPE DECODERS
+# --------------------------
 
 # COMPLETE
 # Decodes binary of type R
@@ -283,6 +304,34 @@ def instructionTypeCB(binary):
     instruction = opcodeToInstruction(binary)
     return ""
 
+# ------------------
+# REGISTER HANDLERS
+# ------------------
+
+def typeRRegisterHandler(instruction, Rm, shamt, Rn, Rd):
+    # TODO
+    return ""
+
+def typeIRegisterHandler(instruction, imm12, Rn, Rd):
+    # TODO
+    return ""
+
+def typeDRegisterHandler(instruction, dt, op, Rn, Rt):
+    # TODO
+    return ""
+
+def typeBRegisterHandler(instruction, addr):
+    # TODO
+    return ""
+
+def typeCBRegisterHandler(instruction, addr, Rt):
+    # TODO
+    return ""
+
+# -----
+# MAIN
+# -----
+
 def main():
     
     print("Binary Code: ")
@@ -304,6 +353,8 @@ def main():
 
     print(instrs)
 
+    # Convert each procedure address to a generic label, and add the label to the list of labels
+    # Then, print the newly generated label and the instructions in the procedure
     for proc in instrs:
 
         if proc not in labels:
@@ -321,6 +372,7 @@ def main():
             else:
                 print(instr[0])
 
+# Call main method if this file is run as a script
 if __name__ == '__main__':
     main()
 
