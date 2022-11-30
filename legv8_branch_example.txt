@@ -1,0 +1,12 @@
+
+--------------
+LEGv8 Example
+--------------
+
+BL label                // Store in link register
+ADD X0, X0, X0
+B done                  // Branch to line 8, "done" label (empty line, end of program)
+label:
+ADD X1, X1, X1
+BR LR                   // Branch back to link register
+done:
