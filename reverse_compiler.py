@@ -290,17 +290,10 @@ def instructionTypeB(binary):
     instruction = opcodeToInstruction(binary)
     addr = binary[6:32]
 
-    # If the branching in the instruction references a new procedure, add it to the list of procedures
-    # and set the current procedure to the new procedure
-    if (int(addr, 2) not in procedures):
-        procedures[int(addr, 2)] = []
-        labels[int(addr, 2)] = "L" + str(len(labels))
-
     # Return the instruction and the address of instruction to branch to
     res = instruction + " #" + str(int(addr, 2))
-    procedure_address = int(addr, 2)
 
-    return res, procedure_address
+    return res
 
 # TODO
 # Decodes binary of type CB
@@ -308,36 +301,6 @@ def instructionTypeB(binary):
 def instructionTypeCB(binary):
     # TODO
     instruction = opcodeToInstruction(binary)
-    return ""
-
-# ------------------
-# REGISTER HANDLERS
-# ------------------
-
-def typeRRegisterHandler(instruction, Rm, shamt, Rn, Rd):
-    if (instruction == "ADD"):
-        registers[int(Rd, 2)] = registers[int(Rn, 2)] + registers[int(Rm, 2)]
-    elif (instruction == "AND"):
-        # TODO
-        registers[int(Rd, 2)] = util.bitwiseAnd(bin(registers[int(Rn, 2)]), bin(registers[int(Rm, 2)]))
-    
-    # TODO Handle other R-type instructions
-    return ""
-
-def typeIRegisterHandler(instruction, imm12, Rn, Rd):
-    # TODO Handle other I-type instructions
-    return ""
-
-def typeDRegisterHandler(instruction, dt, op, Rn, Rt):
-    # TODO Handle other D-type instructions
-    return ""
-
-def typeBRegisterHandler(instruction, addr):
-    # TODO Handle other B-type instructions
-    return ""
-
-def typeCBRegisterHandler(instruction, addr, Rt):
-    # TODO Handle other CB-type instructions
     return ""
 
 # -----
