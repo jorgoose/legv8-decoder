@@ -1,50 +1,4 @@
 
-import util
-
-
-# Pre-Code Notes:
-# PROBLEM 1: Need to come up with a way to handle branching instructions. I think I can do this the following way:
-#   Since we are decoding the binary in the order at which it is processed by the computer, that means when 
-#   a branch instruction is encountered, we know the following binary up until BR LR or another branch is made is its own subset.
-#   So, we can just store the address of the initial branch instruction and the address to branch to in a dictionary. 
-#   Then, when we are done decoding the binary, we can go through the dictionary and replace the branch instruction with the address to branch to.
-#
-# Ex 1:
-# 0     BL label          // label address gets stored to link register
-# 1     ...
-# 2     ...              // Arbitrary code that is not part of the  "label" procedure
-# 3     label:
-# 4     ADDI X0, X0, 1   // This is the instruction associated with the label
-# 5     BR LR            // Return to the address stored in the link register
-#
-# Execution order in binary:
-# 0, 3, 4, 5, 1, 2
-
-# Ex 2:
-# 0     B label          // label address gets stored to link register
-# 1     ...
-# 2     ...              // Abritrary code
-# 3     label:
-# 4     ADDI X0, X0, 1   // This is the instruction associated with the label
-#
-# Execution order in binary:
-# 0, 3, 4
-# 0, (new procedure discovered)
-
-# My Solution: Store the instructions of each procedure call individually, each with an associated label
-
-# To keep track of procedures and instructions, use a dictionary where each entry essentially represents a procedure
-# Each key is the address of the first instruction in the procedure, 
-# and the associated value is a list of instructions associated with that procedure
-
-# Procedure --> Associated Instructions
-procedures = {0: []}
-labels = {0: 'main'}
-
-registers = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0, 11: 0, 12: 0, 13: 0, 14: 0, 15: 0, 16: 0, 17: 0, 18: 0, 19: 0, 20: 0, 21: 0, 22: 0, 23: 0, 24: 0, 25: 0, 26: 0, 27: 0, 28: 0, 29: 0, 30: 0, 31: 0}
-
-global currentProcedureAddr
-currentProcedureAddr = 0
 
 #----------------------------------
 # INSTRUCTION TO OPCODE DICTIONARY
@@ -85,34 +39,16 @@ format = {
 
 def reverseCompiler(filename):
 
-    global currentProcedureAddr
+    leg_result = []
 
     instructions = readFile(filename)
-    for instruction in instructions:
 
-        leg_result = []
+    for instruction in instructions:
 
         # If the instruction is of type R, decode it using the R decoder
         if (format[opcodeToInstruction(instruction)] == "R"):
-
-            # Special case for BR
-            if(opcodeToInstruction(instruction) == "BR"):
-
-                res_and_addr = instructionTypeR(instruction)
-                res = res_and_addr[0]
-                addr = res_and_addr[1]
-                
-                leg_result.append(res)
-
-                # Add the branch instruction to the current procedure
-                procedures[currentProcedureAddr].append(leg_result)
-
-                currentProcedureAddr = addr
-                continue
-
-            else:
-                leg_result.append(instructionTypeR(instruction))
-
+            leg_result.append(instructionTypeR(instruction))
+            
         # If the instruction is of type I, decode it using the I decoder
         elif (format[opcodeToInstruction(instruction)] == "I"):
             leg_result.append(instructionTypeI(instruction))
@@ -123,33 +59,17 @@ def reverseCompiler(filename):
 
         # If the instruction is of type B, decode it using the B decoder
         elif (format[opcodeToInstruction(instruction)] == "B"):
-
-                res_and_addr = instructionTypeB(instruction)
-                res = res_and_addr[0]
-                addr = res_and_addr[1]
-
-                leg_result.append(res)
-
-                # Add the branch instruction to the current procedure
-                procedures[currentProcedureAddr].append(leg_result)
-    
-                # Update the current procedure address to where the branch instruction is pointing to
-                currentProcedureAddr = addr
-
-                continue
+            leg_result.append(instructionTypeB(instruction))
 
         # If the instruction is of type CB, decode it using the CB decoder
         elif (format[opcodeToInstruction(instruction)] == "CB"):
-           leg_result.append(instructionTypeCB(instruction))
+            leg_result.append(instructionTypeCB(instruction))
 
         # Otherwise, the instruction is not supported
         else:
             print("Unknown instruction type: " + instruction)
 
-        # Add the decoded instruction to the list of instructions associated with the current procedure
-        procedures[currentProcedureAddr].append(leg_result)
-
-    return procedures
+    return leg_result
 
 # -----------------------
 # READ FILE LINE BY LINE
@@ -244,13 +164,12 @@ def instructionTypeR(binary):
 
     # Special case for BR
     if (instruction == "BR"):
-        res = "BR X" + str(int(Rd, 2))
-        addr = int(Rd, 2)
-        return res, addr
-    elif (int(shamt, 2) == 0):
-        return instruction + " X" + str(int(Rd, 2)) + ", X" + str(int(Rn, 2)) + ", X" + str(int(Rm, 2))
-    else:
+        res = "BR X" + str(int(Rn, 2))
+        return res
+    elif (instruction == "LSL" or instruction == "LSR"):
         return instruction + " X" + str(int(Rd, 2)) + ", X" + str(int(Rn, 2)) + ", #" + str(int(shamt, 2))
+    else:
+        return instruction + " X" + str(int(Rd, 2)) + ", X" + str(int(Rn, 2)) + ", X" + str(int(Rm, 2))
 
 # TODO Test for correctness and completeness
 # Decodes binary of type I
@@ -291,7 +210,7 @@ def instructionTypeB(binary):
     addr = binary[6:32]
 
     # Return the instruction and the address of instruction to branch to
-    res = instruction + " #" + str(int(addr, 2))
+    res = instruction + " " + str(int(addr, 2))
 
     return res
 
@@ -301,7 +220,64 @@ def instructionTypeB(binary):
 def instructionTypeCB(binary):
     # TODO
     instruction = opcodeToInstruction(binary)
+    addr = binary[8:32]
+
     return ""
+
+# ---------------
+# LABEL GENERATOR
+# ---------------
+
+def generateLabels(leg_instructions):
+
+    # Key: address --> Value: label name
+    labels = {}
+
+    for i in range(len(leg_instructions)):
+        if (leg_instructions[i].find("B") == 0 and leg_instructions[i].find("BR") != 0):
+
+            offset = leg_instructions[i].split(" ")[-1]
+            branch_to = i + int(offset) + 1
+
+            if (branch_to not in labels):
+                new_label = "label_" + str(len(labels) + 1)
+                labels[branch_to] = new_label
+        
+    return labels
+
+# ---------------
+# INJECT LABELS
+# ---------------
+
+def injectLabels(leg_instructions, labels):
+
+    # List to store all of the lines of the final assembly code
+    final_result = []
+
+    for i in range(len(leg_instructions)):
+
+        # Handle label injection for label locations
+        if (i in labels):
+            final_result.append(labels[i] + ":")
+
+        # Handle label injection for B instructions
+        if (leg_instructions[i].find("B") == 0) and leg_instructions[i].find("BR") != 0 and i + int(leg_instructions[i].split(" ")[-1]) + 1 in labels:
+
+            instr = leg_instructions[i].split(" ")[0]
+            label = labels[i + int(leg_instructions[i].split(" ")[-1]) + 1]
+
+            final_result.append(instr + " " + label)
+
+        # If there's no label to handle, just append the instruction
+        else: 
+            final_result.append(leg_instructions[i])
+
+    
+    # Finally, if there is a label at the end of the program, add it to the result
+    if (len(leg_instructions) in labels):
+        final_result.append(labels[len(leg_instructions)] + ":")
+
+    return final_result
 
 # -----
 # MAIN
@@ -322,32 +298,16 @@ def main():
     print("")
     print("Converted to LegV8 Code: ")
 
+    # Convert the binary instructions to LEGv8 instructions
     instrs = reverseCompiler('binary_branch.txt')
 
-    labels = {0: 'main'}
+    # Generate labels for the instruction set
+    labels = generateLabels(instrs)
 
-    print(instrs)
-
-    # Convert each procedure address to a generic label, and add the label to the list of labels
-    # Then, print the newly generated label and the instructions in the procedure
-    for proc in instrs:
-
-        if proc not in labels:
-            labels[proc] = 'procedure_' + str(len(labels) - 1)
-
-        print(labels[proc] + ':')
-
-        for instr in instrs[proc]:
-
-            proc_addr = int(instr[0][-1])
-
-            if(instr[0][0] == 'B' and proc_addr not in labels):
-                labels[proc_addr] = 'procedure_' + str(len(labels) - 1)
-                print(instr[0].split(' ')[0] + ' ' + labels[proc_addr])
-            else:
-                print(instr[0])
+    # Inject the labels into the instruction set and print the final result
+    final_result = injectLabels(instrs, labels)
+    for line in final_result : print(line)
 
 # Call main method if this file is run as a script
 if __name__ == '__main__':
     main()
-
