@@ -4,12 +4,13 @@
 # INSTRUCTION TO OPCODE DICTIONARY
 #----------------------------------
 
-format = {
+instruction_to_format = {
     "ADD": "R",
     "ADDI": "I",
     "AND": "R",
     "ANDI": "I",
     "B": "B",
+    "B.cond": "CB",
     "BL": "B",
     "BR": "R",
     "CBNZ": "CB",
@@ -33,6 +34,27 @@ format = {
     "HALT": "R"
 }
 
+#----------------------------------
+# BINARY TO CONDITION DICTIONARY
+#----------------------------------
+
+binary_to_condition = {
+    "00000": "EQ",
+    "00001": "NE",
+    "00010": "HS",
+    "00011": "LO",
+    "00100": "MI",
+    "00101": "PL",
+    "00110": "VS",
+    "00111": "VC",
+    "01000": "HI",
+    "01001": "LS",
+    "01010": "GE",
+    "01011": "LT",
+    "01100": "GT",
+    "01101": "LE",
+}
+
 #------------------
 # REVERSE COMPILER
 #------------------
@@ -46,23 +68,23 @@ def reverseCompiler(filename):
     for instruction in instructions:
 
         # If the instruction is of type R, decode it using the R decoder
-        if (format[opcodeToInstruction(instruction)] == "R"):
+        if (instruction_to_format[opcodeToInstruction(instruction)] == "R"):
             leg_result.append(instructionTypeR(instruction))
             
         # If the instruction is of type I, decode it using the I decoder
-        elif (format[opcodeToInstruction(instruction)] == "I"):
+        elif (instruction_to_format[opcodeToInstruction(instruction)] == "I"):
             leg_result.append(instructionTypeI(instruction))
 
         # If the instruction is of type D, decode it using the D decoder
-        elif (format[opcodeToInstruction(instruction)] == "D"):
+        elif (instruction_to_format[opcodeToInstruction(instruction)] == "D"):
             leg_result.append(instructionTypeD(instruction))
 
         # If the instruction is of type B, decode it using the B decoder
-        elif (format[opcodeToInstruction(instruction)] == "B"):
+        elif (instruction_to_format[opcodeToInstruction(instruction)] == "B"):
             leg_result.append(instructionTypeB(instruction))
 
         # If the instruction is of type CB, decode it using the CB decoder
-        elif (format[opcodeToInstruction(instruction)] == "CB"):
+        elif (instruction_to_format[opcodeToInstruction(instruction)] == "CB"):
             leg_result.append(instructionTypeCB(instruction))
 
         # Otherwise, the instruction is not supported
@@ -100,6 +122,8 @@ def opcodeToInstruction(binary):
         return "ANDI"
     elif (binary.find("000101") == 0):
         return "B"
+    elif (binary.find("01010100") == 0):
+        return "B.cond"
     elif (binary.find("100101") == 0):
         return "BL"
     elif (binary.find("11010110000") == 0):
@@ -209,6 +233,9 @@ def instructionTypeB(binary):
     instruction = opcodeToInstruction(binary)
     addr = binary[6:32]
 
+    if (instruction == "B"):
+        print("B #" + str(int(addr, 2)))
+
     # Return the instruction and the address of instruction to branch to
     res = instruction + " " + str(int(addr, 2))
 
@@ -220,9 +247,16 @@ def instructionTypeB(binary):
 def instructionTypeCB(binary):
     # TODO
     instruction = opcodeToInstruction(binary)
-    addr = binary[8:32]
+    addr = binary[8:27]
+    Rt = binary[27:32]
 
-    return ""
+    if instruction == "B.cond":
+        res = "B."+ binary_to_condition[Rt] + " " + str(int(addr, 2))
+    else:
+        # Return the instruction and the address of instruction to branch to
+        res = instruction + " X" + str(int(Rt, 2)) + " #" + str(int(addr, 2))
+
+    return res
 
 # ---------------
 # LABEL GENERATOR
@@ -234,7 +268,7 @@ def generateLabels(leg_instructions):
     labels = {}
 
     for i in range(len(leg_instructions)):
-        if (leg_instructions[i].find("B") == 0 and leg_instructions[i].find("BR") != 0):
+        if (leg_instructions[i].find("B") == 0 or leg_instructions[i].find("C") == 0) and leg_instructions[i].find("BR") != 0:
 
             offset = leg_instructions[i].split(" ")[-1]
             branch_to = i + int(offset) + 1
@@ -261,7 +295,10 @@ def injectLabels(leg_instructions, labels):
             final_result.append(labels[i] + ":")
 
         # Handle label injection for B instructions
-        if (leg_instructions[i].find("B") == 0) and leg_instructions[i].find("BR") != 0 and i + int(leg_instructions[i].split(" ")[-1]) + 1 in labels:
+        if (
+            (leg_instructions[i].find("B") == 0 or leg_instructions[i].find("C") == 0) and
+            leg_instructions[i].find("BR") != 0 and i + int(leg_instructions[i].split(" ")[-1]) + 1 in labels
+            ):
 
             instr = leg_instructions[i].split(" ")[0]
             label = labels[i + int(leg_instructions[i].split(" ")[-1]) + 1]
@@ -291,22 +328,21 @@ def main():
     instructions = file.read().splitlines()
     for instruction in instructions:
         print(instruction)
-        # print(main.opcodeToInstruction(instruction))
-        # print(main.format[main.opcodeToInstruction(instruction)])
-        # print("")
     print("------------------")
     print("")
     print("Converted to LegV8 Code: ")
 
     # Convert the binary instructions to LEGv8 instructions
-    instrs = reverseCompiler('binary_branch.txt')
+    instrs = reverseCompiler('programming1_binary.txt')
+
+    print(instrs)
 
     # Generate labels for the instruction set
-    labels = generateLabels(instrs)
+    # labels = generateLabels(instrs)
 
-    # Inject the labels into the instruction set and print the final result
-    final_result = injectLabels(instrs, labels)
-    for line in final_result : print(line)
+    # # Inject the labels into the instruction set and print the final result
+    # final_result = injectLabels(instrs, labels)
+    # for line in final_result : print(line)
 
 # Call main method if this file is run as a script
 if __name__ == '__main__':
