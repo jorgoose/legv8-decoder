@@ -319,6 +319,10 @@ def injectLabels(leg_instructions, labels):
 
     return final_result
 
+# ----------------------------
+# TWO'S COMPLEMENT CONVERSION
+# ----------------------------
+
 # Convert a string of a signed two's complement binary number into an integer
 def convert_twos_complement(binary):
     if binary[0] == '0':
