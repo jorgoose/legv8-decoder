@@ -205,9 +205,11 @@ def instructionTypeI(binary):
     Rn = binary[22:27]
     Rd = binary[27:32]
 
+    imm12_converted = convert_twos_complement(imm12)
+
     # Return the instruction in the format of the instruction name, followed by the destination register, 
     # followed by the source register, followed by the immediate value
-    return instruction + " X" + str(int(Rd, 2)) + ", X" + str(int(Rn, 2)) + ", #" + str(int(imm12, 2))
+    return instruction + " X" + str(int(Rd, 2)) + ", X" + str(int(Rn, 2)) + ", #" + str(imm12_converted)
 
 # TODO Test for correctness and completeness
 # Decodes binary of type D
@@ -220,9 +222,11 @@ def instructionTypeD(binary):
     Rn = binary[21:27]
     Rt = binary[27:32]
 
+    dt_converted = convert_twos_complement(dt)
+
     # Return the instruction in the format of the instruction name, followed by the target register,
     # followed by the source register, followed by the offset
-    return instruction + " X" + str(int(Rt, 2)) + ", [X" + str(int(Rn, 2)) + ", #" + str(int(dt, 2)) + "]"
+    return instruction + " X" + str(int(Rt, 2)) + ", [X" + str(int(Rn, 2)) + ", #" + str(dt_converted) + "]"
 
 # Decodes binary of type B
 # opcode, addr
@@ -233,28 +237,27 @@ def instructionTypeB(binary):
     instruction = opcodeToInstruction(binary)
     addr = binary[6:32]
 
-    if (instruction == "B"):
-        print("B #" + str(int(addr, 2)))
+    addr_converted = convert_twos_complement(addr)
 
-    # Return the instruction and the address of instruction to branch to
-    res = instruction + " " + str(int(addr, 2))
+    # Return the instruction and the offset of instruction to branch to
+    res = instruction + " " + str(addr_converted)
 
     return res
 
-# TODO
 # Decodes binary of type CB
 # opcode, addr, Rt
 def instructionTypeCB(binary):
-    # TODO
     instruction = opcodeToInstruction(binary)
     addr = binary[8:27]
     Rt = binary[27:32]
 
+    addr_converted = convert_twos_complement(addr)
+
     if instruction == "B.cond":
-        res = "B."+ binary_to_condition[Rt] + " " + str(int(addr, 2))
+        res = "B."+ binary_to_condition[Rt] + " " + str(addr_converted)
     else:
         # Return the instruction and the address of instruction to branch to
-        res = instruction + " X" + str(int(Rt, 2)) + " #" + str(int(addr, 2))
+        res = instruction + " X" + str(int(Rt, 2)) + " " + str(addr_converted)
 
     return res
 
@@ -316,6 +319,13 @@ def injectLabels(leg_instructions, labels):
 
     return final_result
 
+# Convert a string of a signed two's complement binary number into an integer
+def convert_twos_complement(binary):
+    if binary[0] == '0':
+        return int(binary, 2)
+    else:
+        return int(binary, 2) - (1 << len(binary))
+
 # -----
 # MAIN
 # -----
@@ -335,14 +345,12 @@ def main():
     # Convert the binary instructions to LEGv8 instructions
     instrs = reverseCompiler('programming1_binary.txt')
 
-    print(instrs)
-
     # Generate labels for the instruction set
-    # labels = generateLabels(instrs)
+    labels = generateLabels(instrs)
 
     # # Inject the labels into the instruction set and print the final result
-    # final_result = injectLabels(instrs, labels)
-    # for line in final_result : print(line)
+    final_result = injectLabels(instrs, labels)
+    for line in final_result : print(line)
 
 # Call main method if this file is run as a script
 if __name__ == '__main__':
