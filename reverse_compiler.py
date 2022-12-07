@@ -185,9 +185,11 @@ def instructionTypeR(binary):
     shamt = binary[16:22]
     Rn = binary[22:27]
     Rd = binary[27:32]
-
+    # Special case for HALT
+    if (instruction == "HALT"):
+        return "HALT"
     # Special case for BR
-    if (instruction == "BR"):
+    elif (instruction == "BR" or instruction == "PRINT"):
         res = "BR X" + str(int(Rn, 2))
         return res
     elif (instruction == "LSL" or instruction == "LSR"):
