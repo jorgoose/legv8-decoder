@@ -93,13 +93,16 @@ def reverseCompiler(filename):
 
     return leg_result
 
-# -----------------------
-# READ FILE LINE BY LINE
-# -----------------------
+# ---------------------------
+# READ FILE (TEXT OR BINARY)
+# ---------------------------
 
 # Read in .txt file of binary code and split it into a list of instructions, 
-# with each line being an instruction
+#   with each line being an instruction
+# This also works for binary files, as the data for each instruction is stored in a list of 32 bits as a string,
+#   and calling the splitlines() function on a binary file will split it into a list of 32 bit strings.
 def readFile(filename):
+
     file = open(filename, "r")
     instructions = file.read().splitlines()
     file.close()
@@ -340,7 +343,7 @@ def main():
     
     print("Binary Code: ")
     # Open a file and print each line in the file
-    file = open('binary_branch.txt', "r")
+    file = open('programming1_binary.txt', "r")
     instructions = file.read().splitlines()
     for instruction in instructions:
         print(instruction)
@@ -349,7 +352,7 @@ def main():
     print("Converted to LegV8 Code: ")
 
     # Convert the binary instructions to LEGv8 instructions
-    instrs = reverseCompiler('programming1_binary.txt')
+    instrs = reverseCompiler('programming1_binary.bin')
 
     # Generate labels for the instruction set
     labels = generateLabels(instrs)
