@@ -337,19 +337,29 @@ def convert_twos_complement(binary):
 # -----
 
 def main():
-    
-    print("Binary Code: ")
-    # Open a file and print each line in the file
-    file = open('programming1_binary.txt', "r")
+
+    # Get the filepath of the file to decode from the user
+    # ----------------------------------------------------
+    filepath = input("Enter the filename of the file you would like to decode: ")
+
+    # Display the original binary code to the user
+    # --------------------------------------------
+    print("Original Binary Code: ")
+    print("---------------------")
+    file = open(filepath, "r")
     instructions = file.read().splitlines()
     for instruction in instructions:
         print(instruction)
-    print("------------------")
+    print("---------------------")
     print("")
+
+    # Display the converted LEGv8 code to the user
+    # ---------------------------------------------
     print("Converted to LegV8 Code: ")
+    print("---------------------")
 
     # Convert the binary instructions to LEGv8 instructions
-    instrs = reverseCompiler('programming1_binary.bin')
+    instrs = reverseCompiler(filepath)
 
     # Generate labels for the instruction set
     labels = generateLabels(instrs)
