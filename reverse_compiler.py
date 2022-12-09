@@ -342,8 +342,8 @@ def main():
     # ----------------------------------------------------
     filepath = input("Enter the filename of the file you would like to decode: ")
 
-    # Display the original binary code to the user
-    # --------------------------------------------
+    # Display the original binary code to the user (.txt or .bin filetpes supported)
+    # ------------------------------------------------------------------------------
     print("Original Binary Code: ")
     print("---------------------")
     file = open(filepath, "r")
