@@ -177,9 +177,7 @@ def opcodeToInstruction(binary):
 # INSTRUCTION TYPE DECODERS
 # --------------------------
 
-# COMPLETE
 # Decodes binary of type R
-# R-type instructions
 # opcode, Rm, shamt, Rn, Rd
 # 31-21 20-16 15-10 9-5 4-0
 def instructionTypeR(binary):
@@ -188,11 +186,12 @@ def instructionTypeR(binary):
     shamt = binary[16:22]
     Rn = binary[22:27]
     Rd = binary[27:32]
+
     # Special case for HALT
     if (instruction == "HALT"):
         return "HALT"
     # Special case for BR
-    elif (instruction == "BR" or instruction == "PRINT"):
+    elif (instruction == "BR" or instruction == "PRNT"):
         res = "BR X" + str(int(Rn, 2))
         return res
     elif (instruction == "LSL" or instruction == "LSR"):
@@ -200,7 +199,6 @@ def instructionTypeR(binary):
     else:
         return instruction + " X" + str(int(Rd, 2)) + ", X" + str(int(Rn, 2)) + ", X" + str(int(Rm, 2))
 
-# TODO Test for correctness and completeness
 # Decodes binary of type I
 # opcode, imm12, Rn, Rd
 # 31-21 20-10 9-5 4-0
@@ -216,7 +214,6 @@ def instructionTypeI(binary):
     # followed by the source register, followed by the immediate value
     return instruction + " X" + str(int(Rd, 2)) + ", X" + str(int(Rn, 2)) + ", #" + str(imm12_converted)
 
-# TODO Test for correctness and completeness
 # Decodes binary of type D
 # opcode, dt, op, Rn, Rt
 # 31-21 20-12 11-10 9-5 4-0
