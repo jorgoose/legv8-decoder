@@ -1,8 +1,0 @@
-def registerRType(instruction, Rm, shamt, Rn, Rd):
-
-    global registers
-
-    if instruction == "ADD":
-        registers[int(Rm, 2)] = registers[int(Rn, 2)] + registers[int(Rd, 2)]
-    elif instruction == "AND":
-        registers[int(Rm, 2)] = registers[int(Rn, 2)] & registers[int(Rd, 2)]
